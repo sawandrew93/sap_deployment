@@ -332,7 +332,7 @@ echo "Dependency Packages installation complete!" | tee -a "$LOGFILE"
 #Modifying hdb_param.cfg file before using it as input file and giving exec permission on hana installer directory
 echo "Modifying hdb_param.cfg file and giving exec permissions on hana installer directory..." | tee -a "$LOGFILE"
 # if we used a downloaded file the path is already in $hdb_param_file, otherwise we copy installer file to /tmp/hdb.cfg to work on it
-cp "$hdb_param_file" /tmp/hdb.cfg 2>/dev/null || { echo "Failed to copy $hdb_param_file to /tmp/hdb.cfg" | tee -a "$LOGFILE"; exit 1; }
+cp hdb_param.cfg /tmp/hdb.cfg 2>/dev/null || { echo "Failed to copy $hdb_param_file to /tmp/hdb.cfg" | tee -a "$LOGFILE"; exit 1; }
 
 hana_afl_dir=$(find / -type d -name "SAP_HANA_AFL" 2>/dev/null | head -n 1)
 hana_client_dir=$(find / -type d -name "SAP_HANA_CLIENT" 2>/dev/null | head -n 1)
@@ -444,7 +444,7 @@ fi
 sap_installer_file=$(find / -type f -iname "SAP_Software_Use_Rights.pdf" 2>/dev/null | head -n 1)
 sap_installer_path=$(dirname "$sap_installer_file")
 
-cp "$sap_param_file" /tmp/sap.cfg
+cp sap_param.cfg /tmp/sap.cfg
 sed -i "s|installer_path|$sap_installer_path|g" /tmp/sap.cfg
 sed -i "s/serverfqdn/$(hostname)/g" /tmp/sap.cfg
 sed -i "s|B1SITEUSER_PW|${B1SITEUSER_PW}|g" /tmp/sap.cfg
@@ -489,12 +489,5 @@ else
     fi
 fi
 
-#remove config files after installation
-# Remove source files only if they were downloaded to /tmp (do not remove installer-supplied files that are in-place)
-if [[ "$hdb_param_file" == "/tmp/hdb_param.cfg" ]]; then
-  rm -f "$hdb_param_file"
-fi
-if [[ "$sap_param_file" == "/tmp/sap_param.cfg" ]]; then
-  rm -f "$sap_param_file"
-fi
+#remove modified config files after installation
 rm -f /tmp/sap.cfg /tmp/hdb.cfg
