@@ -315,7 +315,7 @@ download_file() {
 # Prefer local installer-provided files; otherwise download as fallback to /tmp
 hdb_param_file=$(find / -type f -name "hdb_param.cfg" 2>/dev/null | head -n 1)
 if [[ -z "$hdb_param_file" ]]; then
-  HDB_URL="https://raw.githubusercontent.com/sawandrew93/salt_sap_deployment/refs/heads/main/hdb_param.cfg"
+  HDB_URL="https://raw.githubusercontent.com/sawandrew93/sap_deployment/refs/heads/main/hdb_param.cfg"
   hdb_param_file="/tmp/hdb_param.cfg"
   echo "No local hdb_param.cfg found. Downloading from $HDB_URL" | tee -a "$LOGFILE"
   if ! download_file "$HDB_URL" "$hdb_param_file"; then
@@ -330,7 +330,7 @@ fi
 
 sap_param_file=$(find / -type f -name "sap_param.cfg" 2>/dev/null | head -n 1)
 if [[ -z "$sap_param_file" ]]; then
-  SAP_URL="https://raw.githubusercontent.com/sawandrew93/salt_sap_deployment/refs/heads/main/sap_param.cfg"
+  SAP_URL="https://raw.githubusercontent.com/sawandrew93/sap_deployment/refs/heads/main/sap_param.cfg"
   sap_param_file="/tmp/sap_param.cfg"
   echo "No local sap_param.cfg found. Downloading from $SAP_URL" | tee -a "$LOGFILE"
   if ! download_file "$SAP_URL" "$sap_param_file"; then
