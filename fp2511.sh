@@ -131,7 +131,7 @@ if [[ "$user_choice" == "2" ]]; then
     echo "vglocal repository is already enabled" | tee -a "$LOGFILE"
   else
     echo "Adding local repository..." | tee -a "$LOGFILE"
-    zypper addrepo -G http://121.54.164.70/15-SP3/ vglocal
+    zypper addrepo -G http://121.54.164.70/15-SP6/ vglocal
   fi
     if ! rpm -q python3-pip &>/dev/null; then
         echo "Installing python3-pip..." | tee -a "$LOGFILE"
