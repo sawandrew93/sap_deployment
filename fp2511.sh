@@ -333,7 +333,9 @@ echo "Dependency Packages installation complete!" | tee -a "$LOGFILE"
 
 #Modifying hdb_param.cfg file before using it as input file and giving exec permission on hana installer directory
 echo "Modifying hdb_param.cfg file and giving exec permissions on hana installer directory..." | tee -a "$LOGFILE"
-cp hdb_param.cfg /tmp/hdb.cfg
+HDB_PARAM_FILE=$(find / -type f -name "hdb_param.cfg" 2>/dev/null | head -n 1)
+
+cp "$HDB_PARAM_FILE" /tmp/hdb.cfg
 
 hana_afl_dir=$(find / -type d -name "SAP_HANA_AFL" 2>/dev/null | head -n 1)
 hana_client_dir=$(find / -type d -name "SAP_HANA_CLIENT" 2>/dev/null | head -n 1)
@@ -443,7 +445,9 @@ fi
 sap_installer_file=$(find / -type f -iname "SAP_Software_Use_Rights.pdf" 2>/dev/null | head -n 1)
 sap_installer_path=$(dirname "$sap_installer_file")
 
-cp sap_param.cfg /tmp/sap.cfg
+SAP_PARAM_FILE=$(find / -type f -name "sap_param.cfg" 2>/dev/null | head -n 1)
+
+cp "$SAP_PARAM_FILE" /tmp/sap.cfg
 sed -i "s|installer_path|$sap_installer_path|g" /tmp/sap.cfg
 sed -i "s/serverfqdn/$(hostname)/g" /tmp/sap.cfg
 sed -i "s|B1SITEUSER_PW|${B1SITEUSER_PW}|g" /tmp/sap.cfg
