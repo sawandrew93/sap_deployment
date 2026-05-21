@@ -11,7 +11,7 @@ fi
 # Check if RMT server parameter is provided
 if [[ -z "$1" ]]; then
     echo "Usage: $0 <RMT_SERVER_IP_OR_HOSTNAME>"
-    echo "Example: $0 192.168.46.92"
+    echo "Example: $0 vgmhana.sapb1mm.com"
     exit 1
 fi
 
