@@ -110,109 +110,10 @@ prompt_password_confirm NEW_DB_USER_PW "Please enter password for $NEW_DB_USER u
 prompt_password_confirm B1SITEUSER_PW "Please enter password for B1SiteUser"
 echo "Choose an option to proceed: You can check the log file at $LOGFILE"
 echo "1. I have downloaded HANA and SAP installers and extracted with SAPCAR"
-echo "2. I want to download from Google Drive"
-echo "3. I have downloaded the installers but not yet extracted"
-read -p "Enter your choice (1 or 2 or 3): " user_choice
+echo "2. I have downloaded the installers but not yet extracted"
+read -p "Enter your choice (1 or 2): " user_choice
 
 if [[ "$user_choice" == "2" ]]; then
-
-  # Prompt user for Google Drive folder ID
-  read -p "Enter the Google Drive shared folder URL or ID: " GDRIVE_URL
-
-  if [[ $GDRIVE_URL =~ drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]+) ]]; then
-    FOLDER_ID=${BASH_REMATCH[1]}
-    echo "FOLDER_ID"
-  else
-    echo "Invalid Google Drive folder URL."
-  fi
-
-  #add repo to download python and gdown if the user want to download from google drive
-  if zypper lr | grep -q vglocal; then
-    echo "vglocal repository is already enabled" | tee -a "$LOGFILE"
-  else
-    echo "Adding local repository..." | tee -a "$LOGFILE"
-    zypper addrepo -G http://121.54.164.70/15-SP3/ vglocal
-  fi
-    if ! rpm -q python3-pip &>/dev/null; then
-        echo "Installing python3-pip..." | tee -a "$LOGFILE"
-        zypper install -y python3-pip
-    else
-        echo "python3-pip is already installed." | tee -a "$LOGFILE"
-    fi
-    if ! pip list | grep gdown &>/dev/null; then
-        echo "Installing gdown..." | tee -a "$LOGFILE"
-        pip install gdown
-    else
-        echo "gdown is already installed." | tee -a "$LOGFILE"
-    fi
-
-  # Create and enter a working directory
-  DOWNLOAD_DIR="/hana/shared/installers"
-
-  echo "Installers will be downloaded under /hana/shared/installers" | tee -a "$LOGFILE"
-  mkdir -p "$DOWNLOAD_DIR" 2>&1 | tee -a "$LOGFILE" || { echo "Failed to create directory $DOWNLOAD_DIR" | tee -a "$LOGFILE"; exit 1; }
-  cd "$DOWNLOAD_DIR" || exit 1
-
-  gdown --folder "$FOLDER_ID"
-
-  find . -type f -iname "*.zip" ! -iname "*Integration.zip" ! -iname "*AddOns.zip" | while read -r zip_file; do
-    echo "Extracting ZIP file: $zip_file"
-    unzip -o "$zip_file" -d "$(dirname "$zip_file")"
-    chmod -R +x .
-    rm "$zip_file"
-  done
-
-  # Find and extract all RAR files recursively
-  find . -type f -iname "*.rar" | while read -r rar_file; do
-    echo "Extracting RAR file: $rar_file"
-    unar -f -o "$(dirname "$rar_file")" "$rar_file"
-    chmod -R +x .
-    rm "$rar_file"
-  done
-
-  echo "Extraction complete. Files are in: $(pwd)" | tee -a "$LOGFILE"
-
-  # Find the SAPCAR executable
-  SAPCAR_EXE=$(find . -iname "SAPCAR_*.EXE" | head -n 1)
-
-  if [[ -z "$SAPCAR_EXE" ]]; then
-    echo "SAPCAR_*.EXE not found." | tee -a "$LOGFILE"
-    exit 1
-  fi
-
-  #use basename command to remove the directory path
-  SAPCAR_NAME=$(basename "$SAPCAR_EXE")
-  echo "Found SAPCAR executable: $SAPCAR_NAME" | tee -a "$LOGFILE"
-
-  # Find all .SAR files and extract them with SAPCAR
-  find . -type f -name "*.SAR" | while IFS= read -r sar_path; do
-    sar_dir=$(dirname "$sar_path")
-    sar_file=$(basename "$sar_path")
-
-
-    # Copy SAPCAR to the SAR file's directory
-    cp "$SAPCAR_EXE" "$sar_dir" || { echo "Failed to copy SAPCAR to $sar_dir"; continue; }
-
-    # Run SAPCAR extract command
-    (
-      cd "$sar_dir" || { echo "Failed to cd to $sar_dir"; continue; }
-
-      sapcar_local=$(basename "$SAPCAR_EXE")
-      if [[ ! -f "$sapcar_local" ]]; then
-        echo "SAPCAR executable not found in $sar_dir" | tee -a "$LOGFILE"
-        continue
-      fi
-
-      # Run extraction
-      echo "Extracting $sar_file with $sapcar_local" | tee -a "$LOGFILE"
-      ./"$sapcar_local" -manifest SIGNATURE.SMF -xvf "$sar_file"
-      chmod -R +x .
-    )
-  done
-
-  echo "All files have been downloaded and extracted." | tee -a "$LOGFILE"
-
-elif [[ "$user_choice" == "3" ]]; then
   read -p "Enter the full path where installers are located: " DOWNLOAD_DIR
 
   if [[ ! -d "$DOWNLOAD_DIR" ]]; then
@@ -457,7 +358,7 @@ EOF"
     else
         echo "Error creating hana database user ${NEW_DB_USER}." | tee -a "$LOGFILE"
         exit 1
-    fi    
+    fi  
 fi
 
 # add script server
