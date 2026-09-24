@@ -120,8 +120,7 @@ prompt_password_confirm() {
     done
 }
 
-# Input prompts
-# MODIFIED HERE: Request FQDN interactively and ensure it's not left blank
+# Ask server fqdn
 while [[ -z "$FQDN" ]]; do
     read -p "Enter FQDN name of the server: " FQDN
 done
