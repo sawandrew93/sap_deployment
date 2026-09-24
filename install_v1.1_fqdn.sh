@@ -61,6 +61,22 @@ else
   exit 1
 fi
 
+# Check for parameter files in the current working directory
+HDB_PARAM_FILE="./hdb_param.cfg"
+if [[ ! -f "$HDB_PARAM_FILE" ]]; then
+    echo "❌ Error: hdb_param.cfg missing from current directory." | tee -a "$LOGFILE"
+    exit 1
+fi
+
+SAP_PARAM_FILE="./sap_param.cfg"
+if [[ ! -f "$SAP_PARAM_FILE" ]]; then
+    echo "❌ Error: sap_param.cfg missing from current directory." | tee -a "$LOGFILE"
+    exit 1
+fi
+
+# Copy to tmp directory
+cp "$HDB_PARAM_FILE" /tmp/hdb.cfg
+cp "$SAP_PARAM_FILE" /tmp/sap.cfg
 
 # Default values for non-password variables
 SID="NDB"
@@ -78,21 +94,23 @@ prompt_with_default() {
 }
 
 # Function to request password
+# Corrected prompt function
 prompt_password_confirm() {
     local var_name=$1
     local prompt_message=$2
+    local pw1 pw2
 
     while true; do
         echo -n "$prompt_message: "
-        read pw1
+        read -rs pw1
+        echo # Add newline since keystrokes are hidden
 
         echo -n "Confirm $prompt_message: "
-        read pw2
-
-        echo "You entered: $pw2"
+        read -rs pw2
+        echo # Add newline
 
         if [[ "$pw1" == "$pw2" ]]; then
-            eval "$var_name=\"\$pw1\""
+            declare -g "$var_name=$pw1"
             break
         else
             echo "Passwords do not match. Please try again."
@@ -228,9 +246,6 @@ echo "Dependency Packages installation complete!" | tee -a "$LOGFILE"
 
 #Modifying hdb_param.cfg file before using it as input file and giving exec permission on hana installer directory
 echo "Modifying hdb_param.cfg file and giving exec permissions on hana installer directory..." | tee -a "$LOGFILE"
-HDB_PARAM_FILE=$(find / -type f -name "hdb_param.cfg" 2>/dev/null | head -n 1)
-
-cp "$HDB_PARAM_FILE" /tmp/hdb.cfg
 
 hana_afl_dir=$(find / -type d -name "SAP_HANA_AFL" 2>/dev/null | head -n 1)
 hana_client_dir=$(find / -type d -name "SAP_HANA_CLIENT" 2>/dev/null | head -n 1)
@@ -340,9 +355,6 @@ fi
 sap_installer_file=$(find / -type f -iname "SAP_Software_Use_Rights.pdf" 2>/dev/null | head -n 1)
 sap_installer_path=$(dirname "$sap_installer_file")
 
-SAP_PARAM_FILE=$(find / -type f -name "sap_param.cfg" 2>/dev/null | head -n 1)
-
-cp "$SAP_PARAM_FILE" /tmp/sap.cfg
 sed -i "s|installer_path|$sap_installer_path|g" /tmp/sap.cfg
 sed -i "s/serverfqdn/$FQDN/g" /tmp/sap.cfg
 sed -i "s|B1SITEUSER_PW|${B1SITEUSER_PW}|g" /tmp/sap.cfg
